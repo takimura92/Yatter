@@ -60,7 +60,9 @@ export function TimelineFeed({ initialYweets }: TimelineFeedProps) {
 
             setYweets((prev) => prev.filter((yweet) => yweet.id !== deletingId));
             setIsDone(true);
-        } catch {
+        } catch (error){
+            console.error("削除エラー:", error);
+            alert("投稿の削除に失敗しました");
             setDeletingId(null);
             setIsDone(false);
         }
@@ -78,7 +80,6 @@ export function TimelineFeed({ initialYweets }: TimelineFeedProps) {
             yweets.map((yweet) => {
                 const isOwn = user?.username === yweet.user.username;
             return(
-                <>
             <YweetCard
                 key={yweet.id}
                 username={yweet.user.username}
@@ -86,16 +87,16 @@ export function TimelineFeed({ initialYweets }: TimelineFeedProps) {
                 avatarUrl={yweet.user.avatar}
                 onDelete={isOwn ? () => handleDeleteClick(yweet.id) : undefined}
                 />
-            <ConfirmDialog
+            )})
+            )}
+        <ConfirmDialog
             isOpen={isOpen}
             message={isDone ? "削除しました" : "この Yweet を削除しますか？"}
             showConfirm={!isDone}
             cancelLabel={isDone ? "閉じる" : "キャンセル"}
             onConfirm={handleConfirm}
             onCancel={handleCancel}
-            />
-            </>)})
-            )}
+        />
     </>
     );
 }
