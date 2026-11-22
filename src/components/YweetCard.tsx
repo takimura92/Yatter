@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 type YweetCardProps = {
   username: string;
   content: string;
@@ -24,7 +26,9 @@ export function YweetCard({ username, content, avatarUrl,onDelete }: YweetCardPr
           className="h-10 w-10 shrink-0 rounded-full object-cover"
         />
         <div className="min-w-0 flex-1">
-          <p className="font-bold text-gray-900">@{username}</p>
+          <Link href={`/users/${username}`} className="font-bold text-gray-900 hover:underline">
+          @{username}
+          </Link>
           {onDelete && (
             <button 
             type="button"
