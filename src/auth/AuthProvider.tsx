@@ -14,6 +14,7 @@ export type AuthUser = {
 type AuthContextValue = {
   user: AuthUser | null;
   login: (username: string, password: string) => Promise<void>;
+  signup: (username: string, password: string) => Promise<void>;
   logout: () => void;
   /** 認証付き API 用。未ログインなら null */
   getAuthenticationHeader: () => string | null;
@@ -54,6 +55,25 @@ export function AuthProvider({
     setUser({ username: data.username });
   }
 
+  async function signup(username: string, password: string) {
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    const res = await fetch(`${baseUrl}/v1/users`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username, password }),
+    });
+
+    if (!res.ok) {
+      throw new Error("新規登録に失敗しました");
+    }
+
+    const data = (await res.json()) as { username: string };
+    setUsernameCookie(data.username);
+    setUser({ username: data.username });
+  }
+
   function logout() {
     clearUsernameCookie();
     setUser(null);
@@ -69,6 +89,7 @@ export function AuthProvider({
       value={{
         user,
         login,
+        signup,
         logout,
         getAuthenticationHeader,
       }}

@@ -5,6 +5,7 @@ import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
+import Link from "next/link";
 
 export default function LoginPage(){
     const [username, setUsername] = useState("")
@@ -57,6 +58,12 @@ export default function LoginPage(){
             ログイン
         </Button>
         </form>
+        <p className="mt-4 text-center text-sm text-gray-600">
+            アカウントがない場合は{""}
+            <Link href={"/signup"} className="text-blue-500 hover:underline">
+            新規登録
+            </Link>
+        </p>
     </div>
     );
 }
