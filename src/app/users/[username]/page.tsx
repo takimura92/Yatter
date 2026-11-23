@@ -1,24 +1,27 @@
-import { ProfileActionButton } from "@/components/ProfileActionButton";
 import { ProfileFeed } from "@/components/ProfileFeeds";
 import { Timeline } from "@/components/Timeline";
-import { YweetCard } from "@/components/YweetCard";
+import { ProfileHeader } from "@/components/ProfileHeader";
 import { Yweet } from "@/types/yweet";
+import { User } from "@/types/user"
 import Link from "next/link";
+import { cookies } from "next/headers";
+import {
+    AUTH_COOKIE_KEY,
+    parseUsernameCookieValue,
+    toAuthenticationHeader,
+} from "@/lib/authCookie";
 
-type User = {
-    id: number;
-    username: string;
-    display_name: string;
-    note: string;
-    avatar: string;
-    header: string;
-    followers_count: number;
-    following_count: number;
-};
 
 type PageProps = {
     params: Promise<{ username: string }>;
 };
+
+type Relationship = {
+    id: number;
+    following: boolean;
+    followed_by: boolean;
+};
+
 
 export default async function UserPage({ params }: PageProps) {
     const { username } = await params;
@@ -26,6 +29,10 @@ export default async function UserPage({ params }: PageProps) {
     const userRes = await fetch(`${baseUrl}/v1/users/${username}`, {
     cache: "no-store",
 });
+    const cookieStore = await cookies();
+    const loginUsername = parseUsernameCookieValue(
+        cookieStore.get(AUTH_COOKIE_KEY)?.value
+    );
 
   // 確認する（ターミナルに出る）
     console.log(username, userRes.status);
@@ -36,6 +43,23 @@ export default async function UserPage({ params }: PageProps) {
     const yweets = (await yweetRes.json()) as Yweet[];
 
     console.log(yweets)
+
+    let isFollowing = false;
+    if (loginUsername && loginUsername !== username) {
+        const relationshipRes = await fetch(
+            `${baseUrl}/v1/users/relationships?username=${encodeURIComponent(username)}`,
+            {
+                cache: "no-store",
+                headers: {
+                    Authentication: toAuthenticationHeader(loginUsername),
+                },
+            }
+        );
+        if (relationshipRes.ok) {
+            const relationships = (await relationshipRes.json()) as Relationship[];
+            isFollowing = relationships[0]?.following ?? false;
+        }
+    }
 
 
 if (userRes.status === 404) {
@@ -60,52 +84,7 @@ const user = (await userRes.json()) as User;
 return (
 <Timeline>
     <div className="border-b border-gray-200">
-        {user.header ? (
-            <img
-            src={user.header}
-            alt=""
-            className="h-36 w-full object-cover"
-            />
-        ) : (
-        <div className="h-36 w-full bg-gray-200" />
-        )}
-        <div className="px-4 pb-4">
-            <div className="flex items-start justify-between">
-                <img
-                src={
-                    user.avatar && user.avatar.length > 0
-                    ? user.avatar
-                    : "/avatar-default.svg"
-                }
-                alt=""
-                width={80}
-                height={80}
-                className="-mt-10 h-20 w-20 rounded-full border-4 border-white object-cover"
-                />
-                <div className="pt-3">
-                    <ProfileActionButton username={user.username} />
-                </div>
-            </div>
-            <p className="mt-2 text-xl font-bold text-gray-900">
-                {user.display_name || `@${user.username}`}
-            </p>
-            <p className="text-sm text-gray-500">@{user.username}</p>
-                {user.note ? (
-            <p className="mt-3 whitespace-pre-wrap break-words text-sm text-gray-800">
-                {user.note}
-            </p>
-        ) : null}
-        <p className="mt-3 text-sm text-gray-500">
-            <span className="font-bold text-gray-900">
-                {user.following_count}
-            </span>{" "}
-            フォロー
-            <span className="ml-4 font-bold text-gray-900">
-                {user.followers_count}
-            </span>{" "}
-            フォロワ-
-            </p>
-        </div>
+        <ProfileHeader user={user} initialFollowing={isFollowing}/>
     </div>
     <div className="border-b border-gray-200">
       {/* プロフィール（手順 2） */}
