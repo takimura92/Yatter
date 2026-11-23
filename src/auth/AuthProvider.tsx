@@ -55,6 +55,7 @@ export function AuthProvider({
     setUser({ username: data.username });
   }
 
+  // review希望箇所
   async function signup(username: string, password: string) {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
     const res = await fetch(`${baseUrl}/v1/users`, {
@@ -73,6 +74,7 @@ export function AuthProvider({
     setUsernameCookie(data.username);
     setUser({ username: data.username });
   }
+  // ここまで
 
   function logout() {
     clearUsernameCookie();

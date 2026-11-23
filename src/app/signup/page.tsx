@@ -11,6 +11,7 @@ export default function SignupPage(){
     const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
 
+    // review希望箇所
     const { signup } = useAuth();
     const router = useRouter();
 
@@ -24,6 +25,7 @@ export default function SignupPage(){
             console.error(error)
             alert("新規登録に失敗しました")
         }
+        // ここまで
 }
     return(
     <div className="mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-sm flex-col justify-center px-4">
